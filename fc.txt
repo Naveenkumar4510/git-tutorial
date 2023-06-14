@@ -1,0 +1,540 @@
+//registerdao
+
+package com.keane.training.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.List;
+
+import com.keane.dbcon.ConnectionHolder;
+import com.keane.dbcon.DBConnectionException;
+import com.keane.dbfw.DBFWException;
+import com.keane.dbfw.DBHelper;
+import com.keane.dbfw.ParamMapper;
+import com.keane.training.domain.User;
+
+// EmployeeDao
+// employee login
+// register,
+// deletion
+// updation .. 
+
+public class RegisterDAO {
+	
+	
+	public int registerUser(final User user) throws DAOAppException {
+		ConnectionHolder ch = null;
+		Connection con = null;
+		int res = -1;
+		
+		ParamMapper mapper = new ParamMapper() 
+		{
+			@Override
+			public void mapParams(PreparedStatement pStmt) throws SQLException
+			{
+//				pStmt.setInt(1, user.getPortalID());
+//				pStmt.setString(2, user.getName());
+//				pStmt.setInt(3, user.getEmployeeId());
+//				pStmt.setString(4, user.getTechnology());
+//				pStmt.setString(5, user.getPassword());
+				pStmt.setInt(1,user.getStuid());
+				pStmt.setString(2,user.getStname());
+				pStmt.setString(3,user.getStpassword());
+			}
+		};
+		
+		 try {
+			ch = ConnectionHolder.getInstance();
+			con = ch.getConnection();
+			res = DBHelper.executeUpdate(con,SqlMapper.ADD_USER, mapper);
+
+		} catch (DBConnectionException e) {
+			throw new DAOAppException(e);
+		} catch (DBFWException e) {
+			throw new DAOAppException(e);
+		}
+		return res;
+	}
+
+	
+	public boolean validateUser(final int stuid) throws DAOAppException {
+		ConnectionHolder ch = null;
+		Connection con = null;
+		List users = null;
+
+		ParamMapper paramMapper = new ParamMapper() {
+
+			@Override
+			public void mapParams(PreparedStatement pStmt) throws SQLException {
+				pStmt.setInt(1, stuid);
+			}
+		};
+		try {
+			ch = ConnectionHolder.getInstance();
+			con = ch.getConnection();
+			users = DBHelper.executeSelect(con, SqlMapper.FETCH_USER,
+					paramMapper, SqlMapper.MAP_USER);
+
+		} catch (DBConnectionException e) {
+			throw new DAOAppException(e);
+		} catch (DBFWException e) {
+			throw new DAOAppException(e);
+		}
+
+		return (users != null && users.size() > 0);
+
+	}
+	
+	
+	
+}
+
+//logndao
+package com.keane.training.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
+import com.keane.dbcon.ConnectionHolder;
+import com.keane.dbcon.DBConnectionException;
+import com.keane.dbfw.DBFWException;
+import com.keane.dbfw.DBHelper;
+import com.keane.dbfw.ParamMapper;
+
+public class LoginDAO {
+	static Logger log = Logger.getLogger(LoginDAO.class);
+
+	public List validateUser(final int stuid) throws DAOAppException {
+		List res = null;
+		ConnectionHolder ch = null;
+		Connection con = null;
+		try {
+			ch = ConnectionHolder.getInstance();// reads all props for db con 
+			con = ch.getConnection();
+			ParamMapper paramMapper = new ParamMapper() {
+
+				@Override
+				public void mapParams(PreparedStatement pStmt)
+						throws SQLException {
+					pStmt.setInt(1, stuid);
+				}
+			};
+			res = DBHelper.executeSelect(con, SqlMapper.FETCH_USER,paramMapper, SqlMapper.MAP_USER);
+
+		} catch (DBConnectionException e) {
+			log.error(e);
+			throw new DAOAppException(e);
+		} catch (DBFWException e) {
+			throw new DAOAppException(e);
+		}
+		return res;
+
+	}
+}
+//sqlmapper
+package com.keane.training.dao;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import com.keane.dbfw.ResultMapper;
+import com.keane.training.domain.User;
+
+public class SqlMapper {
+
+	// database : mydb
+	// table Name : user_info 
+	// fields :  portalid(int (6)), name (varchar), employeeid(int 6), technology (varchar), password (varchar)
+	
+	
+	public static final String FETCH_USER = "select stname,stpassword from student where stuid=?";
+//	public static final String ADD_USER = "insert into user_info values(?,?,?,?,?)";
+	public static final String ADD_USER = "insert into student values(?,?,?)";
+	public static final String DEL_USER="delete from student where stuid=?";
+	public static final String UPD_USER="update user_info set name=?,employeeId=?,technology=?,password=? where portalid=?";	
+	
+	
+	public static final ResultMapper MAP_USER = new ResultMapper() {
+
+		@Override
+		public Object mapRows(ResultSet rs) throws SQLException {
+			User user = new User();
+//			user.setPassword(rs.getString("password"));
+//			user.setEmployeeId(rs.getInt("employeeId"));
+			user.setStpassword(rs.getString("stpassword"));
+			user.setStuid(rs.getInt("stuid"));
+			return user;
+			
+		}
+	};
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	/*
+	 * pStmt.setInt(1, user.getPortalID());
+				pStmt.setString(2, user.getName());
+				pStmt.setInt(3, user.getEmployeeId());
+				pStmt.setString(4, user.getTechnology());
+				pStmt.setString(5, user.getPassword());
+	 * 
+	 */
+
+	
+	
+
+}
+/*
+<Context docBase="FrontControllerApp" path="/FrontControllerApp" reloadable="true" source="org.eclipse.jst.jee.server:FrontControllerApp">
+			<Resource name="jdbc/MyDB"
+			auth="container"
+			driverClassName="oracle.jdbc.driver.OracleDriver"
+			url="jdbc:oracle:thin:@localhost:1521:XE"
+			username="TRDB"
+			password="TRDB"
+			maxActive="20"
+			maxIdle="10"
+			maxWait="-1"
+			/>
+			</Context>
+*/
+
+
+//domain
+package com.keane.training.domain;
+
+public class User {
+	private int stuid;
+	private String stname;
+	private String stpassword;
+	
+	public User() {
+		super();
+	}
+	
+	public User(int stuid, String stname, String stpassword) {
+		super();
+		this.stuid = stuid;
+		this.stname = stname;
+		this.stpassword = stpassword;
+	}
+	
+	public int getStuid() {
+		return stuid;
+	}
+	public void setStuid(int stuid) {
+		this.stuid = stuid;
+	}
+	public String getStname() {
+		return stname;
+	}
+	public void setStname(String stname) {
+		this.stname = stname;
+	}
+	public String getStpassword() {
+		return stpassword;
+	}
+	public void setStpassword(String stpassword) {
+		this.stpassword = stpassword;
+	}
+
+	
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("User [stuid=");
+		builder.append(stuid);
+		builder.append(", stname=");
+		builder.append(stname);
+		builder.append(", stpassword=");
+		builder.append(stpassword);
+		builder.append("]");
+		return builder.toString();
+	}
+
+
+}
+//registaer
+package com.keane.training.web.handlers;
+
+import java.io.IOException;
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import org.apache.log4j.Logger;
+import com.keane.mvc.HttpRequestHandler;
+import com.keane.training.dao.DAOAppException;
+import com.keane.training.dao.RegisterDAO;
+import com.keane.training.domain.User;
+
+public class RegisterUser implements HttpRequestHandler 
+{
+	
+	static Logger log = Logger.getLogger(RegisterUser.class);
+
+	@Override
+	public void handle(HttpServletRequest request, HttpServletResponse response)throws ServletException, IOException {
+
+		RegisterDAO dao = new RegisterDAO();
+		User user = new User();
+		
+		
+//		user.setPortalID(Integer.parseInt(request.getParameter("portal_id")));
+//		user.setName(request.getParameter("name"));
+//		user.setEmployeeId(Integer.parseInt(request.getParameter("emp_id")));
+//		user.setTechnology(request.getParameter("tech"));
+
+		user.setStuid(Integer.parseInt(request.getParameter("stuid")));
+        user.setStname(request.getParameter("stname"));
+//        user.setStpassword(request.getParameter("stpassword"));
+		
+		boolean isExists;
+		try {
+			isExists = dao.validateUser(user.getStuid()); // is this user already existed ? / not 
+
+			if (isExists) {
+				log.info("User already registered");
+				RequestDispatcher dispatcher = request.getRequestDispatcher("..\\pages\\Register.jsp");
+				request.setAttribute("Err",	"User already registered with the system");
+				dispatcher.forward(request, response);
+			} 
+			
+			else 
+			{
+				
+				user.setStpassword("NttData@"+ Integer.toString(user.getStuid()));
+//				setPassword("NttData@"+ Integer.toString(user.getStuid());
+				int finalRes = dao.registerUser(user);
+				
+				if (finalRes > 0) {
+					RequestDispatcher dispatcher = request.getRequestDispatcher("..\\pages\\success.jsp");
+					request.setAttribute("success","User succesfully registered with the system");
+					request.setAttribute("details", user);
+					dispatcher.forward(request, response);
+					
+				}
+			}
+		} catch (DAOAppException e) {
+			RequestDispatcher dispatcher = request
+					.getRequestDispatcher("error.jsp");
+			request.setAttribute("Err", e.getMessage());
+			dispatcher.forward(request, response);
+		}
+	}
+
+}
+//login
+package com.keane.training.web.handlers;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.List;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+
+import com.keane.mvc.HttpRequestHandler;
+import com.keane.training.dao.DAOAppException;
+import com.keane.training.dao.LoginDAO;
+import com.keane.training.domain.User;
+
+public class Login implements HttpRequestHandler {
+
+	public static Logger log = Logger.getLogger(Login.class);
+
+	public void handle(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException 
+	{
+		
+		PrintWriter out = response.getWriter();
+		
+		int stuid = Integer.parseInt(request.getParameter("stuid"));
+		String stpassword = request.getParameter("stpassword");
+		
+		
+		int flag = -1;
+		List users = null;
+		LoginDAO dao = new LoginDAO();
+		try {
+			users = dao.validateUser(stuid);
+			log.info(users);
+			for (Object object : users) {
+
+				User user = (User) object;
+				if (user.getStpassword().equals(stpassword)) {
+					flag = 0;
+					break;
+				}
+			}
+			
+			
+			
+			log.info("Flag in login " + flag);
+			if (flag == 0) {
+				RequestDispatcher dispatcher = request
+						.getRequestDispatcher("home.jsp");
+				request.setAttribute("Name", stuid);
+				dispatcher.forward(request, response);
+
+			} else {
+				RequestDispatcher dispatcher = request
+						.getRequestDispatcher("Login.jsp");
+				request.setAttribute("Err",
+						"username are password is incorrect");
+				dispatcher.forward(request, response);
+			}
+
+		} catch (DAOAppException e) {
+			RequestDispatcher dispatcher = request
+					.getRequestDispatcher("error.jsp");
+			request.setAttribute("Err", e.getMessage());
+			dispatcher.forward(request, response);
+
+		}
+
+	}
+}
+//user.java
+package com.keane.training.domain;
+
+public class User {
+	private int portalID;
+	private String name;
+	private int employeeId;
+	private String technology;
+	private String password;
+
+	public int getPortalID() {
+		return portalID;
+	}
+
+	public void setPortalID(int portalID) {
+		this.portalID = portalID;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public int getEmployeeId() {
+		return employeeId;
+	}
+
+	public void setEmployeeId(int employeeId) {
+		this.employeeId = employeeId;
+	}
+
+	public String getTechnology() {
+		return technology;
+	}
+
+	public void setTechnology(String technology) {
+		this.technology = technology;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("User [portalID=");
+		builder.append(portalID);
+		builder.append(", name=");
+		builder.append(name);
+		builder.append(", employeeId=");
+		builder.append(employeeId);
+		builder.append(", technology=");
+		builder.append(technology);
+		builder.append(", password=");
+		builder.append(password);
+		builder.append("]");
+		return builder.toString();
+	}
+
+}
+success.jsp
+<%@page import="com.keane.training.domain.User"%>
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+	pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Insert title here</title>
+</head>
+<body>
+<%
+String context = request.getContextPath();
+%>
+<font color="green" size="20">${requestScope.success }</font>
+<h3>Welcome ${requestScope.details.stuid }</h3>
+<h4>Please note your password for further use
+${requestScope.details.stpassword }</h4>
+
+<span><a href="<%=context%>\pages\Login.jsp">Click here </a> to login</span>
+</body>
+</html>
+
+
+
+//register.jsp
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Register Yourself</title>
+</head>
+<body>
+	<div class="container mt-5">
+		<h2 class="text-center mb-3">Register</h2>
+		<form action="register.do">    
+			<div class="row">
+				<div class="col-md-6 offset-md-3">
+					<c:if test="${requestScope.Err!=null}">
+						<div class="alert alert-danger">${requestScope.Err}</div>
+					</c:if>
+					<div class="form-group">
+						<label for="stuid">Student ID</label>
+						<input type="text" class="form-control" id="stuid" name="stuid">
+					</div>
+					<div class="form-group">
+						<label for="stname">Name</label>
+						<input type="text" class="form-control" id="stname" name="stname">
+					</div>
+
+						<div class="text-center">
+						<button type="submit" class="btn btn-primary">Register</button>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+</body>
+</html>

@@ -1,0 +1,122 @@
+  body {
+            background-image: url(img/wp2.jpg);
+            background-position: center;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .navbar {
+            background-color: rgba(34, 34, 34, 0.7); /* Set the navbar background to semi-transparent */
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .navbar-brand {
+            font-size: 28px; /* Increase the font size of the navbar brand */
+            font-weight: bold;
+            color: white;
+            margin-right: auto;
+            text-decoration: none;
+        }
+
+        .navbar-nav {
+            display: flex;
+        }
+
+        .nav-item {
+            margin-left: 1rem;
+        }
+
+        .nav-link {
+            color: #fff;
+            font-size: 20px; /* Increase the font size of the navbar links */
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover {
+            color: black;
+        }
+
+        /* Container styles */
+        .container {
+            padding: 2rem;
+            border-radius: 0.5rem;
+        }
+
+        /* Form styles */
+        form {
+            background-color: transparent; /* Remove the white box background */
+        }
+
+       h3{
+       margin-top:40px;
+    font-weight: bold; /* Make the text bold */
+            color: #000000;
+            font-size: 35px;
+            margin-left: 35px;
+}
+        
+        p {
+        margin-top:80px;
+            font-weight: bold; /* Make the text bold */
+            color: black; /* Set the text color to white */
+            margin-bottom: 1rem;
+            margin-left: 30px;
+            font-size: 20px; /* Add some bottom margin to the headings and paragraphs */
+        }
+.nav-link:hover {
+            background-color:silver;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+        /* Hover effect */
+
+
+
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <title>Login</title>
+    
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<%
+String context = request.getContextPath(); 
+%>
+<nav class="navbar">
+    <a class="navbar-brand" href="#">Vehicle Rent Management</a>
+    <ul class="navbar-nav">
+        <li class="nav-item">
+            <a class="nav-link" href="<%=context%>/pages/Login.jsp">User Login</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="<%=context%>/pages/Register.jsp">Sign Up</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="<%=context%>/pages/admlogin.jsp">Admin Login</a>
+        </li>
+    </ul>
+</nav>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <form>
+                <h3><strong>Welcome to Vehicle Rent</strong></h3>
+                <p><strong>Discover the convenience of renting vehicles for your travel needs.</strong></p>
+                    <p><strong>Experience hassle-free bookings, competitive prices, and reliable customer service.</strong></p>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    </body>
+    </html>
+    
+        

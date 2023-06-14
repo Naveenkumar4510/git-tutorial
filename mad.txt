@@ -1,0 +1,782 @@
+package com.keane.training.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.List;
+
+import org.apache.log4j.Logger;
+
+import com.keane.dbcon.ConnectionHolder;
+import com.keane.dbcon.DBConnectionException;
+import com.keane.dbfw.DBFWException;
+import com.keane.dbfw.DBHelper;
+import com.keane.dbfw.ParamMapper;
+import com.keane.training.domain.Complaint;
+import com.keane.training.domain.Student;
+
+public class LoginDAO {
+	static Logger log = Logger.getLogger(LoginDAO.class);
+
+	public List validateUser(final int id,final String password) throws DAOAppException {
+		List res = null;
+		ConnectionHolder ch = null;
+		Connection con = null;
+		try {
+			ch = ConnectionHolder.getInstance();// reads all props for db con 
+			con = ch.getConnection();
+			ParamMapper paramMapper = new ParamMapper() {
+
+				@Override
+				public void mapParams(PreparedStatement pStmt)
+						throws SQLException {
+					pStmt.setInt(1, id);
+					pStmt.setString(2, password);
+				}
+			};
+			res = DBHelper.executeSelect(con, SqlMapper.ADMIN_LOGIN,paramMapper, SqlMapper.ADMIN_MAPPER);
+
+		} catch (DBConnectionException e) {
+			log.error(e);
+			throw new DAOAppException(e);
+		} catch (DBFWException e) {
+			throw new DAOAppException(e);
+		}
+		return res;
+
+	}
+	public void deleteInstitute(final int id) throws DAOAppException {
+	    ConnectionHolder ch = null;
+	    Connection con = null;
+	    try {
+	        ch = ConnectionHolder.getInstance();
+	        con = ch.getConnection();
+	        ParamMapper paramMapper = new ParamMapper() {
+	            @Override
+	            public void mapParams(PreparedStatement pStmt) throws SQLException {
+	                pStmt.setInt(1, id);
+	            }
+	        };
+	        DBHelper.executeUpdate(con, SqlMapper.ADMIN_DELETE_INSTITUTE, paramMapper);
+	    } catch (DBConnectionException e) {
+	        log.error(e);
+	        throw new DAOAppException(e);
+	    } catch (DBFWException e) {
+	        throw new DAOAppException(e);
+	    }
+	}
+
+	public Student viewStudentById(int id) throws DAOAppException {
+	    ConnectionHolder ch = null;
+	    Connection con = null;
+	    Student student = null;
+	    try {
+	        ch = ConnectionHolder.getInstance();
+	        con = ch.getConnection();
+	        ParamMapper paramMapper = new ParamMapper() {
+	            @Override
+	            public void mapParams(PreparedStatement pStmt) throws SQLException {
+	                pStmt.setInt(1, id);
+	            }
+	        };
+	        List<Student> students = DBHelper.executeSelect(con, SqlMapper.ADMIN_VIEW_STUDENT_WITH_ID, paramMapper, SqlMapper.STUDENT_MAPPER);
+	        if (!students.isEmpty()) {
+	            student = students.get(0);
+	        }
+	    } catch (DBConnectionException e) {
+	        throw new DAOAppException("Unable to connect to database", e);
+	    } catch (DBFWException e) {
+	        throw new DAOAppException("Unable to fetch student", e);
+	    } finally {
+	        try {
+	            if (con != null)
+	                con.close();
+	        } catch (SQLException e) {
+	        }
+	    }
+	    return student;
+	}
+	public Complaint viewcomplaintById(int id) throws DAOAppException {
+	    ConnectionHolder ch = null;
+	    Connection con = null;
+	    Complaint complaint = null;
+	    try {
+	        ch = ConnectionHolder.getInstance();
+	        con = ch.getConnection();
+	        ParamMapper paramMapper = new ParamMapper() {
+	            @Override
+	            public void mapParams(PreparedStatement pStmt) throws SQLException {
+	                pStmt.setInt(1, id);
+	            }
+	        };
+	        List<Complaint> complaints = DBHelper.executeSelect(con, SqlMapper.ADMIN_VIEW_COMPLAINT, paramMapper, SqlMapper.COMPLAINT_MAPPER);
+	        if (!complaints.isEmpty()) {
+	        	complaint = complaints.get(0);
+	        }
+	    } catch (DBConnectionException e) {
+	        throw new DAOAppException("Unable to connect to database", e);
+	    } catch (DBFWException e) {
+	        throw new DAOAppException("Unable to fetch student", e);
+	    } finally {
+	        try {
+	            if (con != null)
+	                con.close();
+	        } catch (SQLException e) {
+	        }
+	    }
+	    return complaint;
+	}
+
+}
+///
+
+
+
+////
+registerdao
+
+
+package com.keane.training.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.List;
+
+import com.keane.dbcon.ConnectionHolder;
+import com.keane.dbcon.DBConnectionException;
+import com.keane.dbfw.DBFWException;
+import com.keane.dbfw.DBHelper;
+import com.keane.dbfw.ParamMapper;
+import com.keane.training.domain.Institute;
+import com.keane.training.domain.Student;
+
+// EmployeeDao
+// employee login
+// register,
+// deletion
+// updation .. 
+
+public class RegisterDAO {
+	
+	
+	public int registerUser(final Student student) throws DAOAppException {
+		ConnectionHolder ch = null;
+		Connection con = null;
+		int res = -1;
+		
+		ParamMapper mapper = new ParamMapper() 
+		{
+			@Override
+			public void mapParams(PreparedStatement pStmt) throws SQLException
+			{
+			 	pStmt.setInt(1, student.getId());
+                pStmt.setString(2, student.getName());
+                pStmt.setString(3, student.getQualification());
+                pStmt.setString(4, student.getPassword());
+                pStmt.setString(5, student.getContactno());
+                pStmt.setString(6, student.getAddress());
+                pStmt.setString(7, student.getEmailid());
+                pStmt.setString(8, student.getUserid());
+				
+			}
+		};
+		  		try {
+			ch = ConnectionHolder.getInstance();
+			con = ch.getConnection();
+			res = DBHelper.executeUpdate(con, SqlMapper.STUDENT_REGISTER, mapper);
+
+		} catch (DBConnectionException e) {
+			throw new DAOAppException(e);
+		} catch (DBFWException e) {
+			throw new DAOAppException(e);
+		}
+		return res;
+	}
+
+	
+	public List<Student> validateUser(final String name,final String password) throws DAOAppException {
+        ConnectionHolder ch = null;
+        Connection con = null;
+        List<Student> users = null;
+
+        ParamMapper paramMapper = new ParamMapper() {
+
+            @Override
+            public void mapParams(PreparedStatement pStmt) throws SQLException {
+                 pStmt.setString(1, name);
+                 pStmt.setString(2, password);
+            }
+        };
+        try {
+            ch = ConnectionHolder.getInstance();
+            con = ch.getConnection();
+            users = DBHelper.executeSelect(con, SqlMapper.STUDENT_LOGIN,paramMapper, SqlMapper.STUDENT_MAPPER);
+
+        } catch (DBConnectionException e) {
+            throw new DAOAppException(e);
+        } catch (DBFWException e) {
+            throw new DAOAppException(e);
+        }
+
+        return users;
+
+    }
+	public static List<Student> viewStudents() throws DAOAppException {
+	    ConnectionHolder ch = null;
+	    Connection con = null;
+	    List<Student> students = null;
+	    try {
+	        ch = ConnectionHolder.getInstance();
+	        con = ch.getConnection();
+	        students = DBHelper.executeSelect(con, SqlMapper.ADMIN_VIEW_STUDENT, SqlMapper.STUDENT_MAPPER);
+	    } catch (DBConnectionException e) {
+	        throw new DAOAppException("Unable to connect to database", e);
+	    } catch (DBFWException e) {
+	        throw new DAOAppException("Unable to fetch students", e);
+	    } finally {
+	        try {
+	            if (con != null)
+	                con.close();
+	        } catch (SQLException e) {
+	        }
+	    }
+	    return students;
+	}
+
+}
+//sqlmapper
+package com.keane.training.dao;
+
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import com.keane.dbfw.ResultMapper;
+import com.keane.training.domain.Admin;
+import com.keane.training.domain.Request;
+import com.keane.training.domain.Student;
+import com.keane.training.domain.Complaint;
+import com.keane.training.domain.Feedback;
+import com.keane.training.domain.Institute;
+import com.keane.training.domain.Response;
+
+public class SqlMapper {
+	
+	 public static final String ADMIN_LOGIN = "SELECT * FROM admin WHERE id = ? AND password = ?";
+	 public static final String ADMIN_VIEW_STUDENT_WITH_ID = "SELECT * FROM students WHERE id = ?";
+    public static final String ADMIN_APPROVE_INSTITUTE = "UPDATE institute SET approved = true WHERE name = ?";
+    public static final String ADMIN_DELETE_INSTITUTE = "DELETE FROM institute WHERE id = ?";
+    public static final String ADMIN_VIEW_STUDENT = "SELECT * FROM students WHERE id = ?";
+
+    public static final String ADMIN_VIEW_COMPLAINT = "SELECT * FROM complaint WHERE id = ?";
+
+    // Institute
+    public static final String INSTITUTE_REGISTER = "INSERT INTO institute (id, name, password, address, affdate, numcourses, numseats) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    public static final String INSTITUTE_LOGIN = "SELECT * FROM institute WHERE name = ? AND password = ?";
+    public static final String INSTITUTE_HANDLE_STUDENTS = "SELECT * FROM students WHERE id = ?";
+    public static final String INSTITUTE_UPDATE_PROFILE = "UPDATE institute SET address = ?, numseats = ?, numcourses = ?";
+    public static final String INSTITUTE_SEND_RESPONSE = "INSERT INTO responses (request_id, institute_name, response) VALUES (?, ?, ?)";
+    public static final String INSTITUTE_VIEW_REQUESTS = "SELECT * FROM requests ";
+    public static final String INSTITUTE_VIEW_FEEDBACKS = "SELECT * FROM feedback";
+
+    // Student
+    public static final String STUDENT_REGISTER = "INSERT INTO students (id, name, qualification, password, contactno, address, emailid, userid) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    public static final String STUDENT_LOGIN = "SELECT * FROM students WHERE id = ? AND password = ?";
+    public static final String STUDENT_UPDATE_PROFILE = "UPDATE students SET name=?,qualification = ?, contactno = ?, address = ?, emailid = ? WHERE userid = ?";
+    public static final String GET_STUDENT_BY_ID = "SELECT id, name, qualification, password, contactno, address, emailid, userid FROM students WHERE id = ?";
+    public static final String STUDENT_SEND_REQUEST = "INSERT INTO requests (id, student_id, institute_name, request_desc) VALUES (?, ?, ?, ?)";
+    public static final String STUDENT_VIEW_RESPONSE = "SELECT * FROM responses ";
+    public static final String STUDENT_SEND_FEEDBACK = "INSERT INTO feedback (student_id, institute_name, feedback) VALUES (?, ?, ?)";
+    public static final String STUDENT_SEND_COMPLAINT = "INSERT INTO complaints (studentid, instname, complaint) VALUES (?, ?, ?)";
+	
+	public static final ResultMapper ADMIN_MAPPER = new ResultMapper() {
+
+		@Override
+		public Admin mapRows(ResultSet rs) throws SQLException {
+			Admin admin = new Admin();
+			admin.setPassword(rs.getString("password"));
+			admin.setId(rs.getInt("id"));
+			return admin;
+			
+		}
+	};
+	
+	public static final ResultMapper INSTITUTE_MAPPER = new ResultMapper() {
+
+		@Override
+		public Institute mapRows(ResultSet rs) throws SQLException {
+			Institute institute = new Institute();
+            institute.setId(rs.getInt("id"));
+            institute.setName(rs.getString("name"));
+            institute.setPassword(rs.getString("password"));
+            institute.setAffdate(rs.getString("affdate"));
+            institute.setAddress(rs.getString("address"));
+            institute.setNumseats(rs.getInt("numseats"));
+            institute.setNumcourses(rs.getInt("numcourses"));
+            return institute;
+		}
+	};
+	public static final ResultMapper REQUEST_MAPPER = new ResultMapper() {
+
+		@Override
+		public Request mapRows(ResultSet rs) throws SQLException {    	
+			 Request request = new Request();
+		        request.setId(rs.getInt("id"));
+		        request.setStudent_id(rs.getInt("student_id"));
+		        request.setInstitute_name(rs.getString("institute_name"));
+		        request.setRequest_desc(rs.getString("request_desc"));
+		        return request;
+    }
+};
+	public static final ResultMapper STUDENT_MAPPER = new ResultMapper() {
+
+		@Override
+		public Student mapRows(ResultSet rs) throws SQLException {
+			
+		   	 Student student = new Student();
+	         student.setId(rs.getInt("id"));
+	         student.setName(rs.getString("name"));
+	         student.setQualification(rs.getString("qualification"));
+	         student.setPassword(rs.getString("password"));
+	         student.setContactno(rs.getString("contactno"));
+	         student.setAddress(rs.getString("address"));
+	         student.setEmailid(rs.getString("emailid"));
+	         student.setUserid(rs.getString("userid"));
+	         //student.setInstituteName(rs.getString("institute_name"));
+	         return student;
+	    }
+	};
+	public static final ResultMapper RESPONSE_MAPPER = new ResultMapper() {
+
+		@Override
+		public Response mapRows(ResultSet rs) throws SQLException {
+			Response response = new Response();
+	    	response.setRequest_id(rs.getInt("request_id"));
+	    	response.setInstitute_name(rs.getString("institute_name"));
+	    	response.setResponse(rs.getString("response"));
+	        return response;
+	    }
+	};
+	
+	public static final ResultMapper FEEDBACK_MAPPER = new ResultMapper() {
+
+		@Override
+		public Feedback mapRows(ResultSet rs) throws SQLException {
+			Feedback feedback = new Feedback();
+	    	feedback.setStudent_id(rs.getInt("student_id"));
+	    	feedback.setInstitute_name(rs.getString("institute_name"));
+	    	feedback.setFeedback(rs.getString("feedback"));
+	        return feedback;
+	    }
+	};
+	public static final ResultMapper COMPLAINT_MAPPER = new ResultMapper() {
+
+		@Override
+		public Complaint mapRows(ResultSet rs) throws SQLException {
+	
+			Complaint complaint = new Complaint();
+	    	complaint.setid(rs.getInt("id"));
+	    	complaint.setInstname(rs.getString("instname"));
+	    	complaint.setComplaint(rs.getString("complaint"));
+	        return complaint;
+	    }
+	};
+	    }
+	///view student
+
+
+
+package com.keane.training.web.handlers;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.List;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+
+import com.keane.mvc.HttpRequestHandler;
+import com.keane.training.dao.DAOAppException;
+import com.keane.training.dao.LoginDAO;
+import com.keane.training.domain.Student;
+
+public class Viewstu implements HttpRequestHandler {
+    public void handle(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        int id = Integer.parseInt(request.getParameter("id"));
+        LoginDAO dao = new LoginDAO();
+        try {
+            Student student = dao.viewStudentById(id);
+            if (student != null) {
+                request.setAttribute("student", student);
+                RequestDispatcher dispatcher = request.getRequestDispatcher("view_student.jsp");
+                dispatcher.forward(request, response);
+            } else {
+                RequestDispatcher dispatcher = request.getRequestDispatcher("error.jsp");
+                request.setAttribute("Err", "No student found with ID " + id);
+                dispatcher.forward(request, response);
+            }
+        } catch (DAOAppException e) {
+            RequestDispatcher dispatcher = request.getRequestDispatcher("error.jsp");
+            request.setAttribute("Err", e.getMessage());
+            dispatcher.forward(request, response);
+        }
+    }
+}
+
+///view student jsp
+
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1"
+    pageEncoding="ISO-8859-1"%>
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>View Student</title>
+<style>
+		body {
+			font-family: Arial, Helvetica, sans-serif;
+			background-color: #f2f2f2;
+		}
+		h2, h3 {
+			text-align: center;
+			color: #4CAF50;
+		}
+		form {
+			margin: 20px auto;
+			width: 50%;
+			border: 1px solid #ddd;
+			padding: 10px;
+			background-color: #fff;
+		}
+		table {
+			margin: 20px auto;
+			border-collapse: collapse;
+			width: 50%;
+			background-color: #fff;
+		}
+		th, td {
+			padding: 8px;
+			text-align: left;
+			border-bottom: 1px solid #ddd;
+		}
+		input[type=text] {
+			width: 100%;
+			padding: 12px 20px;
+			margin: 8px 0;
+			box-sizing: border-box;
+			border: 2px solid #ccc;
+			border-radius: 4px;
+		}
+		input[type=submit] {
+			background-color: #4CAF50;
+			color: white;
+			padding: 12px 20px;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			float: right;
+		}
+		input[type=submit]:hover {
+			background-color: #45a049;
+		}
+		a {
+			display: block;
+			text-align: center;
+			color: #4CAF50;
+		}
+	</style>
+</head>
+<body>
+    <h2 align="center">View Student</h2>
+    <form action="viewstu.do" method="POST">
+        <table>
+            <tr>
+                <td>ID:</td>
+                <td><input type="text" name="id"></td>
+            </tr>
+			<tr>
+				<td colspan="2" align="center"><input type="submit" value="View"></td>
+			</tr>
+			<c:if test="${not empty id}">
+				<input type="hidden" name="id" value="${id}">
+			</c:if>
+		</table>
+	</form>
+	<c:if test="${not empty student}">
+		<h3>Student Details</h3>
+		<table>
+			<tr>
+				<td>ID:</td>
+				<td>${student.id}</td>
+			</tr>
+			<tr>
+				<td>Name:</td>
+				<td>${student.name}</td>
+			</tr>
+			<tr>
+				<td>Age:</td>
+				<td>${student.qualification}</td>
+			</tr>
+			<tr>
+				<td>Email:</td>
+				<td>${student.emailid}</td>
+			</tr>
+			<tr>
+				<td>contact:</td>
+				<td>${student.contactno}</td>
+			</tr>
+			<tr>
+				<td>address:</td>
+				<td>${student.address}</td>
+			</tr>
+		</table>
+	</c:if>
+	<br>
+	<a href="home.jsp">Go back to home page</a>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+//dao
+
+package com.keane.training.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.util.List;
+
+import com.keane.dbcon.ConnectionHolder;
+import com.keane.dbcon.DBConnectionException;
+import com.keane.dbfw.DBFWException;
+import com.keane.dbfw.DBHelper;
+import com.keane.dbfw.ParamMapper;
+import com.keane.training.domain.Book;
+import com.keane.training.domain.User;
+
+// EmployeeDao
+// employee login
+// register,
+// deletion
+// updation .. 
+
+public class AddBookDAO {
+	
+	
+	public int addbook(final Book book) throws DAOAppException {
+		ConnectionHolder ch = null;
+		Connection con = null;
+		int res = -1;
+		
+		ParamMapper mapper = new ParamMapper() 
+		{
+			@Override
+			public void mapParams(PreparedStatement pStmt) throws SQLException
+			{
+//				pStmt.setInt(1, user.getPortalID());
+//				pStmt.setString(2, user.getName());
+//				pStmt.setInt(3, user.getEmployeeId());
+//				pStmt.setString(4, user.getTechnology());
+//				pStmt.setString(5, user.getPassword());
+//				pStmt.setInt(1,user.getStuid());
+//				pStmt.setString(2,user.getStname());
+//				pStmt.setString(3,user.getStpassword());
+				
+//				pStmt.setInt(1,user.getUser_id());
+//				pStmt.setInt(2,user.getRole_id());
+//				pStmt.setString(3,user.getPassword());
+//				pStmt.setString(4,user.getEmail());
+//				pStmt.setString(5,user.getContact_number());
+				
+				pStmt.setInt(1,book.getBid());
+				pStmt.setString(2,book.getBookname());
+				pStmt.setString(3,book.getIsbn());
+				pStmt.setString(4,book.getAuthor());
+				pStmt.setString(5,book.getPublisher());
+				pStmt.setString(6,book.getEdition());
+				pStmt.setInt(7,book.getPrice());
+				pStmt.setInt(8,book.getQuantity());
+				
+			}
+		};
+		
+		 try {
+			ch = ConnectionHolder.getInstance();
+			con = ch.getConnection();
+			res = DBHelper.executeUpdate(con,SqlMapper.ADD_BOOK, mapper);
+
+		} catch (DBConnectionException e) {
+			throw new DAOAppException(e);
+		} catch (DBFWException e) {
+			throw new DAOAppException(e);
+		}
+		return res;
+	}
+
+	
+//	public boolean validateBook(final int bid) throws DAOAppException {
+//		ConnectionHolder ch = null;
+//		Connection con = null;
+//		List users = null;
+//
+//		ParamMapper paramMapper = new ParamMapper() {
+//
+//			@Override
+//			public void mapParams(PreparedStatement pStmt) throws SQLException {
+//				pStmt.setInt(1,bid);
+//			}
+//		};
+//		try {
+//			ch = ConnectionHolder.getInstance();
+//			con = ch.getConnection();
+//			users = DBHelper.executeSelect(con, SqlMapper.FETCH_BOOK,
+//					paramMapper, SqlMapper.MAP_BOOK);
+//
+//		} catch (DBConnectionException e) {
+//			throw new DAOAppException(e);
+//		} catch (DBFWException e) {
+//			throw new DAOAppException(e);
+//		}
+//
+//		return (users != null && users.size() > 0);
+//
+//	}
+	
+	
+	
+}
+
+
+//
+package com.keane.training.web.handlers;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+
+import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.log4j.Logger;
+
+import com.keane.mvc.HttpRequestHandler;
+import com.keane.training.dao.AddBookDAO;
+import com.keane.training.dao.DAOAppException;
+import com.keane.training.domain.Book;
+//import com.keane.training.dao.ProductDAO;
+//import com.keane.training.domain.Product;
+
+public class Addbook implements HttpRequestHandler 
+{
+
+	static Logger log = Logger.getLogger(Addbook.class);
+
+	
+	@Override
+	public void handle(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		response.setContentType("text/html");
+		PrintWriter out = response.getWriter(); 
+		
+		
+//		ProductDAO dao = new ProductDAO();
+//		Product product= new Product();
+		
+		AddBookDAO dao=new AddBookDAO();
+		Book book=new Book();
+		
+		
+//		product.setProductid(Integer.valueOf(request.getParameter("product_id")));
+//		product.setProductname(request.getParameter("product_name"));
+		
+
+		book.setBid(Integer.valueOf(request.getParameter("bid")));
+		book.setBookname(request.getParameter("bookname"));
+		book.setIsbn(request.getParameter("isbn"));
+		book.setAuthor(request.getParameter("author"));
+		book.setPublisher(request.getParameter("publisher"));
+		book.setEdition(request.getParameter("edition"));
+		book.setPrice(Integer.valueOf(request.getParameter("price")));
+		book.setQuantity(Integer.valueOf(request.getParameter("quantity")));
+		
+		
+	
+	/*	boolean isExists;
+		try {
+			isExists = dao.validateProduct(product.getProductid()); // is this user already existed ? / not 
+
+			if (isExists) {
+				log.info("Product already registered");
+				RequestDispatcher dispatcher = request.getRequestDispatcher("..\\pages\\Productmaster.jsp");
+				request.setAttribute("Err",	"Product already registered with the system");
+				dispatcher.forward(request, response);
+			} else 
+			{
+				
+				int finalResult = dao.registerProduct(product);
+				
+				if (finalResult > 0) {
+					RequestDispatcher dispatcher = request.getRequestDispatcher("..\\pages\\successproduct.jsp");
+					request.setAttribute("success","Product succesfully registered with the system");
+					request.setAttribute("details", product);
+					dispatcher.forward(request, response);
+					
+				}
+			}
+		} catch (DAOAppException e) {
+			RequestDispatcher dispatcher = request
+					.getRequestDispatcher("error.jsp");
+			request.setAttribute("Err", e.getMessage());
+			dispatcher.forward(request, response);
+		}*/
+
+		int finalResult;
+		try {
+//			finalResult = dao.registerProduct(product);
+			finalResult = dao.addbook(book);
+			if(finalResult>0) {
+				out.println("<html><body><b>Successfully Inserted"
+                        + "</b></body></html>");
+				
+			}
+		} catch (DAOAppException e) {
+		
+			e.printStackTrace();
+		}
+		
+		
+	}
+}
+
+
+
+
+
+
+
+
+
+
+/*	RegisterDAO dao = new RegisterDAO();
+	User user = new User();
+	
+	
+	user.setPortalID(Integer.parseInt(request.getParameter("portal_id")));
+	user.setName(request.getParameter("name"));
+	user.setEmployeeId(Integer.parseInt(request.getParameter("emp_id")));
+	user.setTechnology(request.getParameter("tech"));
+	*/

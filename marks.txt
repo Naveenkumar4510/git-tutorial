@@ -1,0 +1,1 @@
+PORTAL ID	NAME	 Total Score  	Score  25	JSP(3)	Web Page Design(2)	Session Mgmt (3)	Error pages Tracing and Logging(4)	Validation(4)	Authentication(3)	PMD, Find Bugs, CheckStyle (2)	Junit (2)	Self Review (1)	Peer Review(1)
